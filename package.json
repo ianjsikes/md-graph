@@ -3,31 +3,49 @@
 	"displayName": "md-graph",
 	"description": "Visualize your markdown files as a network graph. Easily navigate files and see relationships.",
 	"version": "0.0.1",
+	"publisher": "ianjsikes",
 	"engines": {
 		"vscode": "^1.47.0"
 	},
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-        "onCommand:md-graph.helloWorld"
+	"keywords": [
+		"markdown",
+		"foam"
 	],
-	"main": "./out/extension.js",
+	"bugs": {
+		"url": "https://github.com/ianjsikes/md-graph/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ianjsikes/md-graph"
+	},
+	"license": "MIT",
+	"activationEvents": [
+		"onLanguage:markdown",
+		"onCommand:md-graph.helloWorld"
+	],
+	"main": "./extension/out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "md-graph.helloWorld",
-				"title": "Hello World"
+				"command": "md-graph.showGraph",
+				"title": "md-graph: Show Graph"
 			}
-		]
+		],
+		"configuration": {
+			"title": "md-graph",
+			"properties": {}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
-		"compile": "tsc -p ./",
-		"lint": "eslint src --ext ts",
-		"watch": "tsc -watch -p ./",
+		"compile": "tsc --project ./extension",
+		"lint": "eslint extension/src --ext ts",
+		"watch": "tsc -watch --project ./extension",
 		"pretest": "yarn run compile && yarn run lint",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./extension/out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.47.0",
