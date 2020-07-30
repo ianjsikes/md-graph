@@ -3,15 +3,14 @@
 'use strict'
 
 const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-  target: 'node',
-  entry: path.resolve(__dirname, 'src', 'extension.ts'),
+  entry: path.resolve(__dirname, 'src', 'index.ts'),
   output: {
     path: path.resolve(__dirname, 'out'),
-    filename: 'extension.js',
-    libraryTarget: 'commonjs2',
+    filename: 'bundle.js',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
   devtool: 'source-map',
@@ -19,12 +18,12 @@ const config = {
     vscode: 'commonjs vscode',
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.tsx', '.jsx', '.ts', '.js'],
   },
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: [
           {
@@ -34,5 +33,6 @@ const config = {
       },
     ],
   },
+  plugins: [new HtmlWebpackPlugin()],
 }
 module.exports = config
