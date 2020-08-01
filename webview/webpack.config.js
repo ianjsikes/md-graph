@@ -3,11 +3,10 @@
 'use strict'
 
 const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-  entry: path.resolve(__dirname, 'src', 'index.ts'),
+  entry: path.resolve(__dirname, 'src', 'index.tsx'),
   output: {
     path: path.resolve(__dirname, 'out'),
     filename: 'bundle.js',
@@ -33,6 +32,5 @@ const config = {
       },
     ],
   },
-  plugins: [new HtmlWebpackPlugin()],
 }
 module.exports = config
