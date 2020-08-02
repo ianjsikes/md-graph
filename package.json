@@ -36,13 +36,36 @@
 		],
 		"configuration": {
 			"title": "md-graph",
-			"properties": {}
+			"properties": {
+				"md-graph.showColumn": {
+					"type": "string",
+					"default": "beside",
+					"description": "- active – in the currently focused column.\n- beside – (default) other than the current.\n- one, two, three, four, five, six, seven, eight, nine – respective editor columns."
+				},
+				"md-graph.openColumn": {
+					"type": "string",
+					"default": "one",
+					"description": "- active – in the currently focused column.\n- beside – other than the current.\n- one (default), two, three, four, five, six, seven, eight, nine – respective editor columns."
+				},
+				"md-graph.autoStart": {
+					"type": "boolean",
+					"default": false,
+					"description": "Should Markdown Links automatically start when a markdown file is opened."
+				},
+				"md-graph.fileTypes": {
+					"type": "array",
+					"default": [
+						"md"
+					],
+					"description": "File type extensions that should be parsed by md-graph"
+				}
+			}
 		}
 	},
 	"scripts": {
 		"vscode:prepublish": "webpack --mode production --config extension/webpack.config.js",
 		"start": "webpack --mode development --config extension/webpack.config.js",
-		"watch": "yarn build:webview && yarn watch:extension",
+		"watch": "concurrently -r \"yarn watch:webview\" \"yarn watch:extension\"",
 		"lint": "eslint extension/src --ext ts",
 		"build:webview": "webpack --mode development --config webview/webpack.config.js",
 		"build:extension": "webpack --mode development --config extension/webpack.config.js",
@@ -71,6 +94,7 @@
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
 		"@typescript-eslint/parser": "^2.30.0",
 		"babel-loader": "^8.1.0",
+		"concurrently": "^5.2.0",
 		"eslint": "^6.8.0",
 		"eslint-config-prettier": "^6.11.0",
 		"glob": "^7.1.6",
@@ -83,6 +107,9 @@
 	"dependencies": {
 		"md5": "^2.2.1",
 		"react": "^16.13.1",
-		"react-dom": "^16.13.1"
+		"react-dom": "^16.13.1",
+		"remark": "^12.0.1",
+		"remark-frontmatter": "^2.0.0",
+		"remark-wiki-link": "^0.0.4"
 	}
 }
