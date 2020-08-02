@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--vscode-editor-background);
+}
+
+.links line {
+  stroke: var(--vscode-editor-foreground);
+  opacity: 0.5;
+}
+
+.nodes circle {
+  cursor: pointer;
+  fill: var(--vscode-editor-foreground);
+  transition: all 0.15s ease-out;
+}
+
+.text text {
+  cursor: pointer;
+  fill: var(--vscode-editor-foreground);
+}
+.nodes [active],
+.text [active] {
+  cursor: pointer;
+  fill: var(--vscode-textLink-foreground);
+}
+
+.buttons {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 16px;
+  cursor: default;
+}
+
+.buttons span > span {
+  color: var(--vscode-foreground);
+}
+
+.buttons #mode-select > button {
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+}
+.buttons #mode-select > button.active {
+  background-color: var(--vscode-editor-foreground);
+  color: var(--vscode-editor-background);
+}
+.buttons #mode-select > button:focus {
+  outline: 0;
+}

@@ -3,9 +3,11 @@ import * as d3 from 'd3'
 import { Node, Edge } from './types'
 import { useGraphState } from './vscode'
 import { useWindowSize, tickUntilDone } from './utils'
+import ZoomContainer from './Zoom'
 
 type D3Node = Node & d3.SimulationNodeDatum
 const Graph: React.FC<{}> = () => {
+  const [svgRef, setSvgRef] = React.useState<SVGSVGElement | null>(null)
   const state = useGraphState()
   const { width, height } = useWindowSize()
 
@@ -33,6 +35,13 @@ const Graph: React.FC<{}> = () => {
     return simulation
   }, [])
 
+  React.useEffect(() => {
+    simulation.force(
+      'center',
+      d3.forceCenter((width || 0) / 2, (height || 0) / 2)
+    )
+  }, [width, height])
+
   const [nodes, edges] = React.useMemo(() => {
     let nodes = Object.values(state.graph) as D3Node[]
     let edges = d3.merge<d3.SimulationLinkDatum<D3Node>>(
@@ -56,12 +65,12 @@ const Graph: React.FC<{}> = () => {
   }, [state])
 
   return (
-    <svg width={width} height={height}>
-      <g>
+    <svg ref={(s) => setSvgRef(s)} width={width} height={height}>
+      <ZoomContainer svg={svgRef}>
         <g className="links">
           {edges.map((edge) => (
             <line
-              key={`${edge.source}-${edge.target}`}
+              key={`${(edge.source as any).id}-${(edge.target as any).id}`}
               strokeWidth={1}
               x1={(edge.source as any).x}
               y1={(edge.source as any).y}
@@ -96,7 +105,7 @@ const Graph: React.FC<{}> = () => {
             </text>
           ))}
         </g>
-      </g>
+      </ZoomContainer>
     </svg>
   )
 }
