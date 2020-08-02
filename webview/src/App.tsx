@@ -1,45 +1,17 @@
 import React from 'react'
-import { useVsCodeEventListener } from './vscode'
+import Graph from './Graph'
 
-export interface Node {
-  id: string
-  path: string
-  label: string
-  links: string[]
-  backlinks: string[]
-}
-
-export type Graph = Record<string, Node>
-
-export interface State {
-  graph: Graph
-  currentNode?: string
-}
-
-const useGraphState = () => {
-  const [state, setState] = React.useState<State>({
-    graph: {},
-    currentNode: undefined,
-  })
-  useVsCodeEventListener((message) => {
-    if (message.type === 'update') {
-      setState(message.payload)
-    }
-  }, [])
-  return state
-}
-
-export default () => {
-  const state = useGraphState()
+const App = () => {
   React.useEffect(() => {
     console.log('VS CODE', vscode, window)
     vscode.postMessage({ type: 'ready' })
   }, [])
 
   return (
-    <div>
-      <h1>Hello</h1>
-      <p>{JSON.stringify(state, null, 2)}</p>
+    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <Graph />
     </div>
   )
 }
+
+export default App
