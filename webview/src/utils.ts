@@ -48,3 +48,6 @@ export const tickUntilDone = <
     simulation.tick()
   }
 }
+
+export const clampedZoom = (val: number, zoom: number) =>
+  zoom >= 1 ? val / zoom : val

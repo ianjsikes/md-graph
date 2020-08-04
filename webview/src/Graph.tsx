@@ -1,14 +1,19 @@
 import React from 'react'
 import * as d3 from 'd3'
-import { Node, Edge } from './types'
-import { useGraphState } from './vscode'
+import { D3Node, State } from './types'
 import { useWindowSize, tickUntilDone } from './utils'
+import Node from './Node'
+import Edge from './Edge'
 import ZoomContainer from './Zoom'
+import { useGraphState } from './vscode'
 
-type D3Node = Node & d3.SimulationNodeDatum
-const Graph: React.FC<{}> = () => {
-  const [svgRef, setSvgRef] = React.useState<SVGSVGElement | null>(null)
+interface Props {}
+
+const Graph: React.FC<Props> = () => {
   const state = useGraphState()
+  const [mode, setMode] = React.useState<'ALL' | 'FOCUS'>('ALL')
+  const [svgRef, setSvgRef] = React.useState<SVGSVGElement | null>(null)
+  const zoomRef = React.useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>(null)
   const { width, height } = useWindowSize()
 
   const simulation = React.useMemo(() => {
@@ -23,9 +28,9 @@ const Graph: React.FC<{}> = () => {
         d3
           .forceLink<D3Node, d3.SimulationLinkDatum<D3Node>>()
           .id((d) => d.id)
-          .distance(70)
+          .distance(50)
       )
-      .force('charge', d3.forceManyBody<D3Node>().strength(-300))
+      .force('charge', d3.forceManyBody<D3Node>().strength(-500))
       .force('x', d3.forceX())
       .force('y', d3.forceY())
       .alphaDecay(0.05)
@@ -64,49 +69,77 @@ const Graph: React.FC<{}> = () => {
     return [nodes, edges]
   }, [state])
 
+  if (!nodes || !nodes.length) {
+    console.log('rendering no nodes', Date.now())
+  } else {
+    console.log('rendering SOME nodes', Date.now())
+  }
+
   return (
-    <svg ref={(s) => setSvgRef(s)} width={width} height={height}>
-      <ZoomContainer svg={svgRef}>
-        <g className="links">
-          {edges.map((edge) => (
-            <line
-              key={`${(edge.source as any).id}-${(edge.target as any).id}`}
-              strokeWidth={1}
-              x1={(edge.source as any).x}
-              y1={(edge.source as any).y}
-              x2={(edge.target as any).x}
-              y2={(edge.target as any).y}
-            />
-          ))}
-        </g>
-        <g className="nodes">
-          {nodes.map((node) => (
-            <circle
-              key={`node-${node.id}`}
-              cx={node.x}
-              cy={node.y}
-              r={4}
-              opacity={1}
-            />
-          ))}
-        </g>
-        <g className="text">
-          {nodes.map((node) => (
-            <text
-              key={`text-${node.id}`}
-              x={node.x}
-              y={(node.y || 0) - 15}
-              opacity={1}
-              fontSize="14px"
-              textAnchor="middle"
-              alignmentBaseline="central"
-            >
-              {node.label.replace(/_*/g, '')}
-            </text>
-          ))}
-        </g>
-      </ZoomContainer>
-    </svg>
+    <div>
+      <svg ref={(s) => setSvgRef(s)} width={width} height={height}>
+        <ZoomContainer
+          ref={zoomRef}
+          svg={svgRef}
+          scaleMin={0.2}
+          scaleMax={3}
+          render={({ k }) => {
+            return (
+              <>
+                <g className="links">
+                  {edges.map((edge) => (
+                    <Edge
+                      key={`${(edge.source as any).id}-${
+                        (edge.target as any).id
+                      }`}
+                      edge={edge as any}
+                      zoomLevel={k}
+                    />
+                  ))}
+                </g>
+                <g className="nodes">
+                  {nodes.map((node) => (
+                    <Node
+                      key={`node-${node.id}`}
+                      node={node}
+                      active={node.id === state.currentNode}
+                      zoomLevel={k}
+                    />
+                  ))}
+                </g>
+              </>
+            )
+          }}
+        />
+      </svg>
+      <div className="bottomRightContainer">
+        <span>
+          <span id="files">0</span> files
+        </span>
+        <span>
+          <span id="connections">0</span> links
+        </span>
+        <span>
+          <span id="zoom">1.00</span>x
+        </span>
+        <div id="mode-select">
+          <button
+            id="mode-all"
+            className={mode === 'ALL' ? 'active' : undefined}
+            onClick={() => setMode('ALL')}
+          >
+            ALL
+          </button>
+          <button
+            id="mode-focus"
+            className={mode === 'FOCUS' ? 'active' : undefined}
+            onClick={() => setMode('FOCUS')}
+          >
+            FOCUS
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

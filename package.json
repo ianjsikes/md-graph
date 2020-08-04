@@ -112,6 +112,7 @@
 		"md5": "^2.2.1",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
+		"react-spring": "^8.0.27",
 		"remark": "^12.0.1",
 		"remark-frontmatter": "^2.0.0",
 		"remark-wiki-link": "^0.0.4"

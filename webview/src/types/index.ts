@@ -19,3 +19,5 @@ export interface Edge {
   source: string
   target: string
 }
+
+export type D3Node = Node & d3.SimulationNodeDatum
