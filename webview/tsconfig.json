@@ -8,6 +8,7 @@
     "rootDir": "src",
     "jsx": "react",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "strict": true /* enable all strict type-checking options */
     /* Additional Checks */
     // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
