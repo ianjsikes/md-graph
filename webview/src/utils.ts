@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { State, D3Node } from './types'
+import * as d3 from 'd3'
 
 interface WindowSize {
   width?: number
@@ -51,3 +53,34 @@ export const tickUntilDone = <
 
 export const clampedZoom = (val: number, zoom: number) =>
   zoom >= 1 ? val / zoom : val
+
+export const createD3Data = ({
+  graph,
+  mode,
+  config,
+}: State): [D3Node[], d3.SimulationLinkDatum<D3Node>[]] => {
+  const MAX_LEVEL = config?.focusNeighborDepth ?? 1
+
+  let nodes = Object.values(graph) as D3Node[]
+
+  let edges = d3.merge<d3.SimulationLinkDatum<D3Node>>(
+    nodes.map((source) => {
+      return source.links.map((target) => ({
+        source: source.id,
+        target,
+      }))
+    })
+  )
+
+  if (mode === 'FOCUS') {
+    nodes = nodes.filter((node) => (node.level ?? 100) <= MAX_LEVEL)
+    edges = edges.filter((edge) => {
+      return (
+        (graph[edge.source as any].level ?? 100) <= MAX_LEVEL &&
+        (graph[edge.target as any].level ?? 100) <= MAX_LEVEL
+      )
+    })
+  }
+
+  return [nodes, edges]
+}

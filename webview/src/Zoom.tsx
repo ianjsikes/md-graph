@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react'
 import * as d3 from 'd3'
+import { useSpring, animated } from 'react-spring'
 
 interface Props {
   svg: SVGSVGElement | null
@@ -17,7 +18,12 @@ const ZoomContainer = React.forwardRef<
   d3.ZoomBehavior<SVGSVGElement, unknown>,
   Props
 >(({ svg, scaleMin, scaleMax, render }, ref) => {
-  const [{ x, y, k }, setTransform] = React.useState({ x: 0, y: 0, k: 1 })
+  const [{ transformStr, x, y, k }, setTransform] = useSpring(() => ({
+    transformStr: `translate(0, 0) scale(1)`,
+    x: 0,
+    y: 0,
+    k: 1,
+  }))
   const zoomRef = React.useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>()
 
   React.useEffect(() => {
@@ -36,7 +42,13 @@ const ZoomContainer = React.forwardRef<
     }
 
     zoom.on('zoom', () => {
-      setTransform(d3.event.transform)
+      const { x, y, k } = d3.event.transform
+      setTransform({
+        transformStr: `translate(${x}, ${y}) scale(${k})`,
+        x,
+        y,
+        k,
+      })
     })
     selection.call(zoom as any)
 
@@ -47,9 +59,7 @@ const ZoomContainer = React.forwardRef<
 
   React.useImperativeHandle(ref, () => zoomRef.current!)
 
-  return (
-    <g transform={`translate(${x}, ${y}) scale(${k})`}>{render({ x, y, k })}</g>
-  )
+  return <animated.g transform={transformStr}>{render({ x, y, k })}</animated.g>
 })
 
 export default ZoomContainer

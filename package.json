@@ -58,6 +58,31 @@
 						"md"
 					],
 					"description": "File type extensions that should be parsed by md-graph"
+				},
+				"md-graph.graph.defaultMode": {
+					"type": "string",
+					"default": "ALL",
+					"enum": [
+						"ALL",
+						"FOCUS"
+					],
+					"enumDescriptions": [
+						"Show the full graph, including every file in the workspace",
+						"Show a graph of the currently open file and its neighbors"
+					],
+					"description": "Default viewing mode to show when opening the md-graph panel"
+				},
+				"md-graph.graph.focusNeighborDepth": {
+					"type": "number",
+					"default": 1,
+					"minimum": 1,
+					"description": "How many levels of neighbors should be shown in focus mode.\nA value of 1 will only show immediate neighbors"
+				},
+				"md-graph.graph.fadeDepth": {
+					"type": "number",
+					"default": 1,
+					"minimum": 0,
+					"description": "How far away should a file be from the current file before its node is faded.\nSet to 0 to not fade any nodes"
 				}
 			}
 		}
@@ -91,6 +116,7 @@
 		"@types/node": "^13.11.0",
 		"@types/react": "^16.9.44",
 		"@types/react-dom": "^16.9.8",
+		"@types/seedrandom": "^2.4.28",
 		"@types/vscode": "^1.47.0",
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
 		"@typescript-eslint/parser": "^2.30.0",
@@ -115,6 +141,7 @@
 		"react-spring": "^8.0.27",
 		"remark": "^12.0.1",
 		"remark-frontmatter": "^2.0.0",
-		"remark-wiki-link": "^0.0.4"
+		"remark-wiki-link": "^0.0.4",
+		"seedrandom": "^3.0.5"
 	}
 }

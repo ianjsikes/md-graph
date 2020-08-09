@@ -3,8 +3,12 @@ import * as path from 'path'
 import { TextDecoder } from 'util'
 import { State } from './types'
 import { fileGlob, parseFile, forEachFile } from './files'
-import { filterNonExistentEdges, generateBacklinks } from './graph'
-import { id, getColumnSetting, getConfig } from './utils'
+import {
+  filterNonExistentEdges,
+  generateBacklinks,
+  traverseGraph,
+} from './graph'
+import { id, getColumnSetting, getConfig, graphConfig } from './utils'
 
 const watch = (
   context: vscode.ExtensionContext,
@@ -22,20 +26,20 @@ const watch = (
     false
   )
 
-  const sendGraph = () =>
+  const sendGraph = () => {
+    filterNonExistentEdges(state.graph)
+    generateBacklinks(state.graph)
+    traverseGraph(state)
     panel.webview.postMessage({ type: 'update', payload: state })
+  }
 
   watcher.onDidChange(async (event) => {
     await parseFile(state, event.path)
-    filterNonExistentEdges(state.graph)
-    generateBacklinks(state.graph)
     sendGraph()
   })
 
   watcher.onDidCreate(async (event) => {
     await parseFile(state, event.path)
-    filterNonExistentEdges(state.graph)
-    generateBacklinks(state.graph)
     sendGraph()
   })
 
@@ -51,6 +55,13 @@ const watch = (
     }
 
     sendGraph()
+  })
+
+  vscode.workspace.onDidChangeConfiguration(async (event) => {
+    if (event.affectsConfiguration('md-graph.graph')) {
+      state.config = graphConfig()
+      sendGraph()
+    }
   })
 
   vscode.workspace.onDidOpenTextDocument(async (event) => {
@@ -95,6 +106,10 @@ const watch = (
           vscode.window.showTextDocument(doc, column)
         })
       }
+      if (message.type === 'mode') {
+        state.mode = message.payload
+        sendGraph()
+      }
     },
     undefined,
     context.subscriptions
@@ -128,11 +143,18 @@ export function activate(context: vscode.ExtensionContext) {
         return
       }
 
-      const state: State = { graph: {}, currentNode: undefined }
+      const state: State = {
+        graph: {},
+        currentNode: undefined,
+        mode: 'ALL',
+        config: graphConfig(),
+      }
+      state.mode = state.config.defaultMode
 
       await forEachFile(state, parseFile)
       filterNonExistentEdges(state.graph)
       generateBacklinks(state.graph)
+      traverseGraph(state)
 
       if (currentFilePath && state.graph[id(currentFilePath)]) {
         state.currentNode = id(currentFilePath)

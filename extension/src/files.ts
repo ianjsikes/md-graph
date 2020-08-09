@@ -40,6 +40,7 @@ export const parseFile = async (state: State, filePath: string) => {
       label: title,
       links: [],
       backlinks: [],
+      level: 10000000,
     }
     state.graph[nodeId] = node
   }

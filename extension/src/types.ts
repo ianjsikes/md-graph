@@ -23,13 +23,24 @@ export interface Node {
   label: string
   links: string[]
   backlinks: string[]
+  level: number
 }
 
 export type Graph = Record<string, Node>
 
+export type Mode = 'ALL' | 'FOCUS'
+
+export interface GraphConfig {
+  defaultMode: Mode
+  focusNeighborDepth: number
+  fadeDepth: number
+}
+
 export interface State {
   graph: Graph
   currentNode?: string
+  mode: Mode
+  config: GraphConfig
 }
 
 export interface MarkdownNode {

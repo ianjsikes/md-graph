@@ -1,7 +1,16 @@
 import * as vscode from 'vscode'
 import * as md5 from 'md5'
 import { extname } from 'path'
-import { MdGraphConfig, ColumnType } from './types'
+import { MdGraphConfig, ColumnType, Mode } from './types'
+
+export const graphConfig = () => {
+  const cfg = vscode.workspace.getConfiguration('md-graph.graph')
+  return {
+    defaultMode: cfg.get('defaultMode') as Mode,
+    focusNeighborDepth: cfg.get('focusNeighborDepth') as number,
+    fadeDepth: cfg.get('fadeDepth') as number,
+  }
+}
 
 /**
  * Get VS Code extension configuration values

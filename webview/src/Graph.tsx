@@ -1,17 +1,17 @@
 import React from 'react'
 import * as d3 from 'd3'
-import { D3Node, State } from './types'
-import { useWindowSize, tickUntilDone } from './utils'
+import { D3Node, Mode } from './types'
+import { useWindowSize, tickUntilDone, createD3Data } from './utils'
 import Node from './Node'
 import Edge from './Edge'
 import ZoomContainer from './Zoom'
 import { useGraphState } from './vscode'
+import seedrandom from 'seedrandom'
 
 interface Props {}
 
 const Graph: React.FC<Props> = () => {
   const state = useGraphState()
-  const [mode, setMode] = React.useState<'ALL' | 'FOCUS'>('ALL')
   const [svgRef, setSvgRef] = React.useState<SVGSVGElement | null>(null)
   const zoomRef = React.useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>(null)
   const { width, height } = useWindowSize()
@@ -48,16 +48,9 @@ const Graph: React.FC<Props> = () => {
   }, [width, height])
 
   const [nodes, edges] = React.useMemo(() => {
-    let nodes = Object.values(state.graph) as D3Node[]
-    let edges = d3.merge<d3.SimulationLinkDatum<D3Node>>(
-      nodes.map((source) => {
-        return source.links.map((target) => ({
-          source: source.id,
-          target,
-        }))
-      })
-    )
+    let [nodes, edges] = createD3Data(state)
 
+    seedrandom('md-graph', { global: true })
     simulation.nodes(nodes)
     simulation
       .force<d3.ForceLink<D3Node, d3.SimulationLinkDatum<D3Node>>>('link')
@@ -65,6 +58,14 @@ const Graph: React.FC<Props> = () => {
     simulation.alpha(1).restart()
     simulation.stop()
     tickUntilDone(simulation)
+
+    const currNode: D3Node = state.graph[state.currentNode!]
+    const selection = d3.select(svgRef!)
+    zoomRef.current?.translateTo(
+      selection as any,
+      currNode.x as any,
+      currNode.y as any
+    )
 
     return [nodes, edges]
   }, [state])
@@ -74,6 +75,10 @@ const Graph: React.FC<Props> = () => {
   } else {
     console.log('rendering SOME nodes', Date.now())
   }
+
+  const currNode: D3Node = state.graph[state.currentNode!]
+  const setMode = (mode: Mode) =>
+    vscode.postMessage({ type: 'mode', payload: mode })
 
   return (
     <div>
@@ -94,6 +99,9 @@ const Graph: React.FC<Props> = () => {
                       }`}
                       edge={edge as any}
                       zoomLevel={k}
+                      centerX={currNode?.x}
+                      centerY={currNode?.y}
+                      config={state.config}
                     />
                   ))}
                 </g>
@@ -104,6 +112,9 @@ const Graph: React.FC<Props> = () => {
                       node={node}
                       active={node.id === state.currentNode}
                       zoomLevel={k}
+                      centerX={currNode?.x}
+                      centerY={currNode?.y}
+                      config={state.config}
                     />
                   ))}
                 </g>
@@ -113,26 +124,17 @@ const Graph: React.FC<Props> = () => {
         />
       </svg>
       <div className="bottomRightContainer">
-        <span>
-          <span id="files">0</span> files
-        </span>
-        <span>
-          <span id="connections">0</span> links
-        </span>
-        <span>
-          <span id="zoom">1.00</span>x
-        </span>
         <div id="mode-select">
           <button
             id="mode-all"
-            className={mode === 'ALL' ? 'active' : undefined}
+            className={state.mode === 'ALL' ? 'active' : undefined}
             onClick={() => setMode('ALL')}
           >
             ALL
           </button>
           <button
             id="mode-focus"
-            className={mode === 'FOCUS' ? 'active' : undefined}
+            className={state.mode === 'FOCUS' ? 'active' : undefined}
             onClick={() => setMode('FOCUS')}
           >
             FOCUS

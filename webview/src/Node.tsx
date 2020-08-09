@@ -1,6 +1,6 @@
 import React from 'react'
 import { animated, useSpring } from 'react-spring'
-import { D3Node } from './types'
+import { D3Node, GraphConfig } from './types'
 import { clampedZoom } from './utils'
 
 const inactiveColor = getComputedStyle(
@@ -14,9 +14,15 @@ interface Props {
   node: D3Node
   active: boolean
   zoomLevel: number
+  centerX?: number
+  centerY?: number
+  config?: GraphConfig
 }
 
 const Node: React.FC<Props> = (props) => {
+  const fadeDepth = props.config?.fadeDepth ?? 0
+  const isFaded = fadeDepth === 0 ? false : fadeDepth < props.node.level
+
   const onClick = () => {
     vscode.postMessage({ type: 'click', payload: props.node })
   }
@@ -25,15 +31,21 @@ const Node: React.FC<Props> = (props) => {
   const fontSize = Math.max(Math.round(clampedZoom(14, props.zoomLevel)), 1)
   const labelOffset = clampedZoom(15, props.zoomLevel)
 
-  const { x, y } = useSpring({ x: props.node.x, y: props.node.y })
+  const [animProps, setAnim] = useSpring(() => ({
+    x: props.centerX,
+    y: props.centerY,
+  }))
+  React.useEffect(() => {
+    setAnim({ x: props.node.x, y: props.node.y })
+  }, [props.node.x, props.node.y])
 
   return (
     <>
       <animated.text
         fill={props.active ? activeColor : inactiveColor}
-        x={x}
-        y={y.interpolate((y) => y! - labelOffset)}
-        opacity={1}
+        x={animProps.x}
+        y={animProps.y.interpolate((y) => y! - labelOffset)}
+        opacity={isFaded ? 0.4 : 1}
         fontSize={`${fontSize}px`}
         textAnchor="middle"
         alignmentBaseline="central"
@@ -42,10 +54,10 @@ const Node: React.FC<Props> = (props) => {
         {props.node.label.replace(/_*/g, '')}
       </animated.text>
       <animated.circle
-        cx={x}
-        cy={y}
+        cx={animProps.x}
+        cy={animProps.y}
         r={nodeSize}
-        opacity={1}
+        opacity={isFaded ? 0.4 : 1}
         onClick={onClick}
         fill={props.active ? activeColor : inactiveColor}
       />
