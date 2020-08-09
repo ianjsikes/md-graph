@@ -91,7 +91,7 @@ Controls how far away a file should be from the current file before its node is 
 
 ## Roadmap
 
-Refer to the GitHub project board. (TODO: Add a link)
+Refer to the [GitHub project board](https://github.com/ianjsikes/md-graph/projects/1)
 
 ## Changelog
 
