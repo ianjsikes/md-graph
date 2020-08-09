@@ -12,7 +12,8 @@
 	],
 	"keywords": [
 		"markdown",
-		"foam"
+		"foam",
+		"wiki"
 	],
 	"bugs": {
 		"url": "https://github.com/ianjsikes/md-graph/issues"
@@ -88,14 +89,10 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "webpack --mode production --config extension/webpack.config.js",
-		"start": "webpack --mode development --config extension/webpack.config.js",
-		"watch": "concurrently -r \"yarn watch:webview\" \"yarn watch:extension\"",
-		"lint": "eslint extension/src --ext ts",
+		"vscode:prepublish": "yarn build:webview --mode production && yarn build:extension --mode production",
+		"watch": "concurrently -r \"yarn build:webview --watch\" \"yarn build:extension --watch\"",
 		"build:webview": "webpack --mode development --config webview/webpack.config.js",
-		"build:extension": "webpack --mode development --config extension/webpack.config.js",
-		"watch:webview": "webpack --mode development --config webview/webpack.config.js --watch",
-		"watch:extension": "webpack --mode development --config extension/webpack.config.js --watch"
+		"build:extension": "webpack --mode development --config extension/webpack.config.js"
 	},
 	"prettier": {
 		"semi": false,

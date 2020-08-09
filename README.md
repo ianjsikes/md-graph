@@ -4,7 +4,9 @@ Adds command `Show Graph` that displays a graph of local links between Markdown 
 
 Gives better insights into structure of your files if you are writing a wiki, a [Foam](https://foambubble.github.io/foam/) notebook or documentation.
 
-![Demo GIF](demo.gif)
+This is a fork of [tchayen/markdown-links](https://github.com/tchayen/markdown-links).
+
+![Demo GIF](docs/demo.gif)
 
 ## Workflow
 
