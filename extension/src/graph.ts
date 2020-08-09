@@ -29,20 +29,26 @@ export const traverseGraph = ({ graph, currentNode }: State) => {
     return
   }
 
+  for (const nodeId in graph) {
+    const node = graph[nodeId]
+    node.level = 10000000
+  }
+
   let visitedSet = new Set()
   let queue = [graph[currentNode]]
-  let level = 0
+  queue[0].level = 0
+  let level = 1
   // The 1 here could be changed to show more nodes
   while (queue.length) {
     let queueLength = queue.length
     for (let i = 0; i < queueLength; i++) {
       let head = queue.shift()!
-      head.level = level
       visitedSet.add(head.id)
 
       let allLinks = [...head.links, ...head.backlinks]
       for (const l of allLinks) {
-        if (graph[l] && !visitedSet.has(graph[l].id)) {
+        if (graph[l] && graph[l].level > level) {
+          graph[l].level = level
           queue.push(graph[l])
         }
       }
