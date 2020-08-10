@@ -59,24 +59,20 @@ const Graph: React.FC<Props> = () => {
     simulation.stop()
     tickUntilDone(simulation)
 
-    const currNode: D3Node = state.graph[state.currentNode!]
-    const selection = d3.select(svgRef!)
-    zoomRef.current?.translateTo(
-      selection as any,
-      currNode.x as any,
-      currNode.y as any
-    )
+    if (state.currentNode && state.graph[state.currentNode]) {
+      const currNode: D3Node = state.graph[state.currentNode]
+      const selection = d3.select(svgRef!)
+      zoomRef.current?.translateTo(
+        selection as any,
+        currNode.x as any,
+        currNode.y as any
+      )
+    }
 
     return [nodes, edges]
   }, [state])
 
-  if (!nodes || !nodes.length) {
-    console.log('rendering no nodes', Date.now())
-  } else {
-    console.log('rendering SOME nodes', Date.now())
-  }
-
-  const currNode: D3Node = state.graph[state.currentNode!]
+  const currNode: D3Node | undefined = state.graph[state.currentNode || '']
   const setMode = (mode: Mode) =>
     vscode.postMessage({ type: 'mode', payload: mode })
 
@@ -144,5 +140,6 @@ const Graph: React.FC<Props> = () => {
     </div>
   )
 }
+Graph.displayName = 'Graph'
 
 export default Graph

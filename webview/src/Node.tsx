@@ -32,8 +32,8 @@ const Node: React.FC<Props> = (props) => {
   const labelOffset = clampedZoom(15, props.zoomLevel)
 
   const [animProps, setAnim] = useSpring(() => ({
-    x: props.centerX,
-    y: props.centerY,
+    x: props.centerX || 0,
+    y: props.centerY || 0,
   }))
   React.useEffect(() => {
     setAnim({ x: props.node.x, y: props.node.y })
@@ -51,7 +51,7 @@ const Node: React.FC<Props> = (props) => {
         alignmentBaseline="central"
         onClick={onClick}
       >
-        {props.node.label.replace(/_*/g, '')}
+        {props.node.label?.replace(/_*/g, '')}
       </animated.text>
       <animated.circle
         cx={animProps.x}
@@ -64,5 +64,6 @@ const Node: React.FC<Props> = (props) => {
     </>
   )
 }
+Node.displayName = 'Node'
 
 export default Node

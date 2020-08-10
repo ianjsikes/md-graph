@@ -25,13 +25,13 @@ export const generateBacklinks = (graph: Graph) => {
  * Adds a `level` property to each node indicating its distance from the start.
  */
 export const traverseGraph = ({ graph, currentNode }: State) => {
-  if (!currentNode || !graph[currentNode]) {
-    return
-  }
-
   for (const nodeId in graph) {
     const node = graph[nodeId]
     node.level = 10000000
+  }
+
+  if (!currentNode || !graph[currentNode]) {
+    return
   }
 
   let visitedSet = new Set()

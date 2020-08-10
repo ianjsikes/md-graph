@@ -67,7 +67,11 @@ const watch = (
   vscode.workspace.onDidOpenTextDocument(async (event) => {
     let path = event.uri.path.replace('.git', '')
     let nodeId = id(path)
-    state.currentNode = nodeId
+    if (state.graph[nodeId]) {
+      state.currentNode = nodeId
+    } else {
+      state.currentNode = undefined
+    }
     sendGraph()
   })
 
@@ -109,6 +113,9 @@ const watch = (
       if (message.type === 'mode') {
         state.mode = message.payload
         sendGraph()
+      }
+      if (message.type === 'error') {
+        vscode.window.showErrorMessage(message.payload)
       }
     },
     undefined,

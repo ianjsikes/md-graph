@@ -22,10 +22,10 @@ const Edge: React.FC<Props> = (props) => {
   const edgeWidth = clampedZoom(1, props.zoomLevel)
 
   const [animProps, setAnim] = useSpring(() => ({
-    x1: props.centerX,
-    y1: props.centerY,
-    x2: props.centerX,
-    y2: props.centerY,
+    x1: props.centerX || 0,
+    y1: props.centerY || 0,
+    x2: props.centerX || 0,
+    y2: props.centerY || 0,
   }))
   React.useEffect(() => {
     setAnim({
@@ -52,5 +52,6 @@ const Edge: React.FC<Props> = (props) => {
     />
   )
 }
+Edge.displayName = 'Edge'
 
 export default Edge

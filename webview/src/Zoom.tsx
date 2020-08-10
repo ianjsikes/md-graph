@@ -61,5 +61,6 @@ const ZoomContainer = React.forwardRef<
 
   return <animated.g transform={transformStr}>{render({ x, y, k })}</animated.g>
 })
+ZoomContainer.displayName = 'ZoomContainer'
 
 export default ZoomContainer

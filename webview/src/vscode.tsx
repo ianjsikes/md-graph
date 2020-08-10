@@ -17,6 +17,12 @@ export const useGraphState = () => {
   const [state, setState] = React.useState<State>({
     graph: {},
     currentNode: undefined,
+    mode: 'ALL',
+    config: {
+      defaultMode: 'ALL',
+      fadeDepth: 1,
+      focusNeighborDepth: 1,
+    },
   })
   useVsCodeEventListener((message) => {
     if (message.type === 'update') {

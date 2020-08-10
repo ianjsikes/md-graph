@@ -10,9 +10,8 @@ const config = {
   output: {
     path: path.resolve(__dirname, 'out'),
     filename: 'bundle.js',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
   },
-  devtool: 'source-map',
+  devtool: 'cheap-module-source-map',
   externals: {
     vscode: 'commonjs vscode',
   },

@@ -2,7 +2,7 @@
 	"name": "md-graph",
 	"displayName": "md-graph",
 	"description": "Visualize your markdown files as a network graph. Easily navigate files and see relationships.",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"publisher": "ianjsikes",
 	"engines": {
 		"vscode": "^1.47.0"
