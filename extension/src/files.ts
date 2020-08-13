@@ -16,9 +16,13 @@ export const fileGlob = () => {
 }
 
 export const parseFile = async (state: State, filePath: string) => {
+  console.log('attempting to parse file', filePath)
   filePath = path.normalize(filePath)
+  console.log('normalized:', filePath)
+  vscode.window.showErrorMessage(`parsing ${filePath}`)
   const buffer = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
   const content = new TextDecoder('utf-8').decode(buffer)
+  console.log('content', content)
   const ast: MarkdownNode = parser.parse(content)
 
   let title = findTitle(ast)
@@ -58,6 +62,7 @@ export const parseFile = async (state: State, filePath: string) => {
     linkSet.add(id(target))
   }
   node.links = Array.from(linkSet)
+  console.log('done parsing', filePath)
 }
 
 export const forEachFile = async (
