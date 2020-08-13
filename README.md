@@ -6,7 +6,7 @@ Gives better insights into structure of your files if you are writing a wiki, a 
 
 This is a fork of [tchayen/markdown-links](https://github.com/tchayen/markdown-links).
 
-![Demo GIF](docs/demo.gif)
+![Demo GIF](demo.gif)
 
 ## Workflow
 
