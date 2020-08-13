@@ -65,6 +65,7 @@ export const forEachFile = async (
   callback: (state: State, path: string) => Promise<void>
 ) => {
   const files = await vscode.workspace.findFiles(fileGlob())
+  vscode.window.showErrorMessage(JSON.stringify(files, null, 2))
 
   return Promise.all(
     files.map((file) => {
