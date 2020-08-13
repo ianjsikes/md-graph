@@ -48,7 +48,9 @@ const Graph: React.FC<Props> = () => {
   }, [width, height])
 
   const [nodes, edges] = React.useMemo(() => {
+    console.log('State:', state)
     let [nodes, edges] = createD3Data(state)
+    console.log('Nodes and edges:', nodes, edges)
 
     seedrandom('md-graph', { global: true })
     simulation.nodes(nodes)
