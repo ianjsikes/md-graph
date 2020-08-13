@@ -8,12 +8,19 @@ import {
   generateBacklinks,
   traverseGraph,
 } from './graph'
-import { id, getColumnSetting, getConfig, graphConfig } from './utils'
+import {
+  id,
+  getColumnSetting,
+  getConfig,
+  graphConfig,
+  normalize,
+} from './utils'
 
 const watch = (
   context: vscode.ExtensionContext,
   panel: vscode.WebviewPanel,
-  state: State
+  state: State,
+  channel: vscode.OutputChannel
 ) => {
   if (vscode.workspace.rootPath === undefined) {
     return
@@ -44,7 +51,7 @@ const watch = (
   })
 
   watcher.onDidDelete(async (event) => {
-    let nodeId = id(event.path)
+    let nodeId = id(normalize(event.path))
     let node = state.graph[nodeId]
     if (!node) return
 
@@ -64,21 +71,39 @@ const watch = (
     }
   })
 
-  vscode.workspace.onDidOpenTextDocument(async (event) => {
-    let path = event.uri.path.replace('.git', '')
-    let nodeId = id(path)
-    if (state.graph[nodeId]) {
-      state.currentNode = nodeId
-    } else {
-      state.currentNode = undefined
+  vscode.window.onDidChangeActiveTextEditor(async (event) => {
+    try {
+      const p = normalize(event?.document.fileName || '')
+      if (p === '.') return
+
+      let nodeId = id(p)
+      channel.appendLine(`OPENING FILE: ${p} --- ID: ${nodeId}`)
+      if (state.graph[nodeId]) {
+        state.currentNode = nodeId
+        sendGraph()
+      }
+    } catch (error) {
+      channel.appendLine(`ERROR OPENING FILE ${error.message}`)
     }
-    sendGraph()
+  })
+
+  vscode.workspace.onDidOpenTextDocument(async (event) => {
+    try {
+      let p = normalize(event.uri.path.replace('.git', ''))
+      let nodeId = id(p)
+      if (state.graph[nodeId]) {
+        state.currentNode = nodeId
+        sendGraph()
+      }
+    } catch (error) {
+      channel.appendLine(`ERROR OPENING DOCUMENT ${error.message}`)
+    }
   })
 
   vscode.workspace.onDidRenameFiles(async (event) => {
     for (const file of event.files) {
-      const prev = file.oldUri.path
-      const next = file.newUri.path
+      const prev = normalize(file.oldUri.path)
+      const next = normalize(file.newUri.path)
       const prevId = id(prev)
       const nextId = id(next)
 
@@ -98,17 +123,24 @@ const watch = (
   })
 
   panel.webview.onDidReceiveMessage(
-    (message) => {
+    async (message) => {
       if (message.type === 'ready') {
         sendGraph()
       }
       if (message.type === 'click') {
-        const openPath = vscode.Uri.file(message.payload.path)
-        const column = getColumnSetting('openColumn')
+        try {
+          const openPath = vscode.Uri.file(message.payload.path)
+          const column = getColumnSetting('openColumn')
 
-        vscode.workspace.openTextDocument(openPath).then((doc) => {
-          vscode.window.showTextDocument(doc, column)
-        })
+          const doc = await vscode.workspace.openTextDocument(openPath)
+          await vscode.window.showTextDocument(doc, column)
+          state.currentNode = message.payload.id
+          sendGraph()
+        } catch (err) {
+          vscode.window.showErrorMessage(
+            `Unable to open "${message.payload.path}" - ${err.message}`
+          )
+        }
       }
       if (message.type === 'mode') {
         state.mode = message.payload
@@ -128,10 +160,14 @@ const watch = (
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const channel = vscode.window.createOutputChannel('md-graph')
+  context.subscriptions.push(channel)
+
   context.subscriptions.push(
     vscode.commands.registerCommand('md-graph.showGraph', async () => {
-      const currentFilePath =
-        vscode.window.activeTextEditor?.document?.uri?.path
+      const currentFilePath = normalize(
+        vscode.window.activeTextEditor?.document?.uri?.path || ''
+      )
       const column = getColumnSetting('showColumn')
       const panel = vscode.window.createWebviewPanel(
         'md-graph',
@@ -168,7 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       panel.webview.html = await getWebviewContent(context, panel)
-      watch(context, panel, state)
+      watch(context, panel, state, channel)
     })
   )
 

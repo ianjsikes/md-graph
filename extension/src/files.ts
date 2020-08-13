@@ -5,7 +5,7 @@ import * as wikiLinkPlugin from 'remark-wiki-link'
 import * as frontmatter from 'remark-frontmatter'
 import { MarkdownNode, State } from './types'
 import { TextDecoder } from 'util'
-import { id, getConfig } from './utils'
+import { id, getConfig, normalize } from './utils'
 import { findLinks, findTitle } from './markdown'
 
 const parser = remark().use(wikiLinkPlugin).use(frontmatter)
@@ -16,53 +16,54 @@ export const fileGlob = () => {
 }
 
 export const parseFile = async (state: State, filePath: string) => {
-  console.log('attempting to parse file', filePath)
-  filePath = path.normalize(filePath)
-  console.log('normalized:', filePath)
-  vscode.window.showErrorMessage(`parsing ${filePath}`)
-  const buffer = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
-  const content = new TextDecoder('utf-8').decode(buffer)
-  console.log('content', content)
-  const ast: MarkdownNode = parser.parse(content)
+  try {
+    filePath = normalize(filePath)
 
-  let title = findTitle(ast)
-  let nodeId = id(filePath)
-  let node = state.graph[nodeId]
+    const buffer = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
+    const content = new TextDecoder('utf-8').decode(buffer)
+    const ast: MarkdownNode = parser.parse(content)
 
-  if (!title) {
+    let basename = path.basename(filePath)
+    let fileNameWithoutExtension = basename.slice(
+      0,
+      basename.length - path.extname(basename).length
+    )
+
+    let title = findTitle(ast) || fileNameWithoutExtension
+    let nodeId = id(filePath)
+    let node = state.graph[nodeId]
+
     if (node) {
-      delete state.graph[nodeId]
+      node.label = title
+    } else {
+      node = {
+        id: id(filePath),
+        path: filePath,
+        label: title,
+        links: [],
+        backlinks: [],
+        level: 10000000,
+      }
+      state.graph[nodeId] = node
     }
-    return
-  }
 
-  if (node) {
-    node.label = title
-  } else {
-    node = {
-      id: id(filePath),
-      path: filePath,
-      label: title,
-      links: [],
-      backlinks: [],
-      level: 10000000,
+    const links = findLinks(ast)
+    const parentDirectory = filePath.split(path.sep).slice(0, -1).join(path.sep)
+    let linkSet = new Set<string>()
+
+    for (const link of links) {
+      let target = normalize(link)
+      if (!path.isAbsolute(link)) {
+        target = normalize(`${parentDirectory}/${link}`)
+      }
+      linkSet.add(id(target))
     }
-    state.graph[nodeId] = node
+    node.links = Array.from(linkSet)
+  } catch (err) {
+    vscode.window.showErrorMessage(
+      `Error parsing file "${filePath} - ${err.message}"`
+    )
   }
-
-  const links = findLinks(ast)
-  const parentDirectory = filePath.split(path.sep).slice(0, -1).join(path.sep)
-  let linkSet = new Set<string>()
-
-  for (const link of links) {
-    let target = path.normalize(link)
-    if (!path.isAbsolute(link)) {
-      target = path.normalize(`${parentDirectory}/${link}`)
-    }
-    linkSet.add(id(target))
-  }
-  node.links = Array.from(linkSet)
-  console.log('done parsing', filePath)
 }
 
 export const forEachFile = async (
@@ -72,12 +73,19 @@ export const forEachFile = async (
   const files = await vscode.workspace.findFiles(fileGlob())
   vscode.window.showErrorMessage(JSON.stringify(files, null, 2))
 
-  return Promise.all(
-    files.map((file) => {
-      const isHiddenFile = path.basename(file.path).startsWith('.')
-      if (!isHiddenFile) {
-        return callback(state, file.path)
-      }
-    })
-  )
+  const handleFile = async (file: vscode.Uri) => {
+    const isHiddenFile = path.basename(file.path).startsWith('.')
+    if (!isHiddenFile) {
+      return callback(state, file.path)
+    }
+  }
+  const sequential = true
+
+  if (sequential) {
+    for (const file of files) {
+      await handleFile(file)
+    }
+  } else {
+    return Promise.all(files.map(handleFile))
+  }
 }

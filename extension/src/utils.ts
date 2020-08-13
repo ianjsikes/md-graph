@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import * as md5 from 'md5'
-import { extname } from 'path'
+import * as path from 'path'
 import { MdGraphConfig, ColumnType, Mode } from './types'
 
 export const graphConfig = () => {
@@ -22,8 +22,19 @@ export const getConfig = <K extends keyof MdGraphConfig>(
   vscode.workspace.getConfiguration('md-graph').get<MdGraphConfig[K]>(key) ||
   defaultVal
 
-export const id = (path: string): string => {
-  return md5(path.slice(0, path.length - extname(path).length))
+/**
+ * Normalize file paths for the current OS, replacing leading slashes if necessary
+ */
+export const normalize = (filePath: string): string => {
+  return path
+    .normalize(filePath)
+    .replace('.git', '')
+    .replace(/^\\(\w:)/, '$1')
+}
+
+export const id = (filePath: string): string => {
+  return filePath.slice(0, filePath.length - path.extname(filePath).length)
+  // return md5(filePath.slice(0, filePath.length - path.extname(filePath).length))
 }
 
 const columnSettingToValue: { [key in ColumnType]: number } = {
