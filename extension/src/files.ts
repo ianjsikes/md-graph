@@ -8,7 +8,9 @@ import { TextDecoder } from 'util'
 import { id, getConfig, normalize } from './utils'
 import { findLinks, findTitle } from './markdown'
 
-const parser = remark().use(wikiLinkPlugin).use(frontmatter)
+const parser = remark()
+  .use(wikiLinkPlugin, { aliasDivider: '|' })
+  .use(frontmatter)
 
 export const fileGlob = () => {
   const fileTypes = getConfig('fileTypes', ['md'])
@@ -71,7 +73,6 @@ export const forEachFile = async (
   callback: (state: State, path: string) => Promise<void>
 ) => {
   const files = await vscode.workspace.findFiles(fileGlob())
-  vscode.window.showErrorMessage(JSON.stringify(files, null, 2))
 
   const handleFile = async (file: vscode.Uri) => {
     const isHiddenFile = path.basename(file.path).startsWith('.')
