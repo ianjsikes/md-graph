@@ -18,11 +18,26 @@ export interface MdGraphConfig {
 }
 
 export interface Node {
+  /**
+   * Some unique identifier. Currently this is just the absolute file path minus the extension
+   */
   id: string
   path: string
+  /**
+   * The first header found in the file. Falls back to the file name if no header is found.
+   */
   label: string
   links: string[]
+  /**
+   * Since the data represents a directed graph, but the visualized graph is undirected,
+   * it helps to have the backlinks as well.
+   */
   backlinks: string[]
+  /**
+   * The distance from this node to the currently selected node.
+   * Computed from a breadth-first graph traversal starting at currentNode.
+   * This will change as you open/close files.
+   */
   level: number
 }
 
